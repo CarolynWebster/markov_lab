@@ -41,14 +41,31 @@ def make_chains(text_string):
 
         >>> chains[('hi', 'there')]
         ['mary', 'juanita']
-        
+
         >>> chains[('there','juanita')]
         [None]
     """
 
     chains = {}
 
-    # your code goes here
+    split_text = text_string.split(" ")
+
+    split_length = len(split_text)
+
+    #Loop through all words in the split text list expect for final two words
+    for i in range(split_length):
+        if i < split_length - 2:
+            bigram = (split_text[i], split_text[i + 1])
+            if bigram in chains:
+                chains[bigram].append(split_text[i + 2])
+            else:
+                chains[bigram] = [split_text[i + 2]]
+
+    #Add final tuple using negative indicies
+    final_tuple = (split_text[-2], split_text[-1])
+
+    #if its in chains get the list and concat with a None type
+    chains[final_tuple] = chains.get(final_tuple, []) + [None]
 
     return chains
 
@@ -66,10 +83,11 @@ def make_text(chains):
 input_path = "green-eggs.txt"
 
 # Open the file and turn it into one long string
-print open_and_read_file(input_path)
+input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
 chains = make_chains(input_text)
+print chains
 
 # Produce random text
 random_text = make_text(chains)
