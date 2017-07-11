@@ -75,7 +75,11 @@ def make_text(chains):
 
     words = []
 
-    # your code goes here
+    current_key = choice(chains.keys())
+    chosen_word = choice(chains[current_key])
+    new_key = (current_key[1], chosen_word)
+
+    words.extend([current_key[0], current_key[1], chosen_word])
 
     return " ".join(words)
 
