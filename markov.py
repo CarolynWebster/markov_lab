@@ -4,7 +4,7 @@ import sys
 
 import string
 
-from random import choice
+from random import choice, randint
 
 
 def open_and_read_file(file_path):
@@ -19,7 +19,7 @@ def open_and_read_file(file_path):
     return initial_text
 
 
-def make_chains(text_string, n_gram_length):
+def make_chains(text_string):
     """Take input text as string; return dictionary of Markov chains.
 
     A chain will be a key that consists of a tuple of (word1, word2)
@@ -51,6 +51,8 @@ def make_chains(text_string, n_gram_length):
 
     split_length = len(split_text)
 
+    n_gram_length = randint(2, 5)
+
     #Loop through all words in the split text list expect for final two words
     for i in range(split_length - n_gram_length):
         # Creates a list to hold n words for our n-gram
@@ -70,7 +72,6 @@ def make_chains(text_string, n_gram_length):
 
     #Add final tuple using negative indicies
     final_tuple = tuple(split_text[-n_gram_length:])
-    #final_tuple = (split_text[-2], split_text[-1])
 
     #if its in chains get the list and concat with a None type
     chains[final_tuple] = chains.get(final_tuple, []) + [None]
@@ -100,18 +101,16 @@ def make_text(chains, max_characters=140):
             chosen_word = choice(chains[initial_key])
 
     # Adding inital key tuple, to make a logical start to the sentence
-    # (initial tuple and chosen word together).
-    # START HERE TO FIX N-GRAMS!!!!!!!!!!
-    words.extend()
-    #words.extend([initial_key[0], initial_key[1], chosen_word])
+    # (initial tuple and chosen word tuple together).
+    words.extend(initial_key + (chosen_word,))
 
-    # Adds character count for the first three words, with 2 spaces between.
-    char_count += len(words[0]) + len(words[1]) + len(words[2]) + 2
+    # Adds character count for the initial key & chosen word, with spaces between.
+    char_count += len(" ".join(words))
 
-    # New key is the 1st index of current(or ititial) key, plus chosen word.
+    # New key is the 1st index of current(or ititial) key, plus chosen word tuple.
     # It then can be used/reassigned in the while loop below
     # (while chosen_word is not None)
-    new_key = (initial_key[1], chosen_word)
+    new_key = (initial_key[1:] + (chosen_word,))
 
     # This generates the Markov chain...we fear it is not DRY. Clean this up!
     while chosen_word is not None:
@@ -119,7 +118,7 @@ def make_text(chains, max_characters=140):
         # new key to evaluate.
         current_key = new_key
         chosen_word = choice(chains[current_key])
-        new_key = (current_key[1], chosen_word)
+        new_key = (current_key[1:] + (chosen_word,))
         # Ensures that a None type is not added to our words list.
         if chosen_word is not None:
             # This checks to see if we are close to max characters and, if so,
@@ -166,7 +165,7 @@ input_path = sys.argv[1]
 input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
-chains = make_chains(input_text, 2)
+chains = make_chains(input_text)
 # print chains
 
 # Produce random text
