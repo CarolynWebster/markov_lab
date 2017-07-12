@@ -48,18 +48,17 @@ def make_chains(text_string):
 
     chains = {}
 
-    split_text = text_string.split(" ")
+    split_text = text_string.split()
 
     split_length = len(split_text)
 
     #Loop through all words in the split text list expect for final two words
-    for i in range(split_length):
-        if i < split_length - 2:
-            bigram = (split_text[i], split_text[i + 1])
-            if bigram in chains:
-                chains[bigram].append(split_text[i + 2])
-            else:
-                chains[bigram] = [split_text[i + 2]]
+    for i in range(split_length - 2):
+        bigram = (split_text[i], split_text[i + 1])
+        if bigram in chains:
+            chains[bigram].append(split_text[i + 2])
+        else:
+            chains[bigram] = [split_text[i + 2]]
 
     #Add final tuple using negative indicies
     final_tuple = (split_text[-2], split_text[-1])
@@ -74,12 +73,23 @@ def make_text(chains):
     """Return text from chains."""
 
     words = []
+    chosen_word = ""
 
-    current_key = choice(chains.keys())
-    chosen_word = choice(chains[current_key])
-    new_key = (current_key[1], chosen_word)
+    #This loop means: While the chosen word is not None or "".
+    while not chosen_word:
+        initial_key = choice(chains.keys())
+        chosen_word = choice(chains[initial_key])
 
-    words.extend([current_key[0], current_key[1], chosen_word])
+    words.extend([initial_key[0], initial_key[1], chosen_word])
+
+    new_key = (initial_key[1], chosen_word)
+
+    while chosen_word is not None:
+        current_key = new_key
+        chosen_word = choice(chains[current_key])
+        new_key = (current_key[1], chosen_word)
+        if chosen_word is not None:
+            words.append(chosen_word)
 
     return " ".join(words)
 
@@ -91,7 +101,7 @@ input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
 chains = make_chains(input_text)
-print chains
+# print chains
 
 # Produce random text
 random_text = make_text(chains)
