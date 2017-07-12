@@ -67,9 +67,10 @@ def make_chains(text_string):
     return chains
 
 
-def make_text(chains):
+def make_text(chains, max_characters=140):
     """Return text from chains."""
 
+    #  Counts character to ensure we are under 140 characters"
     char_count = 0
 
     words = []
@@ -80,39 +81,58 @@ def make_text(chains):
 
     all_punct = string.punctuation
 
-    #This loop means: While the chosen word is not None or "".
+    #This loop means: While the chosen word is not None or "" (empty string).
     while not chosen_word:
+        # Choosing initial tuple key & choosing random associated value.
         initial_key = choice(chains.keys())
         if initial_key[0][0].isupper():
             chosen_word = choice(chains[initial_key])
 
+    # Adding inital key tuple, to make a logical start to the sentence
+    # (initial tuple and chosen word together).
     words.extend([initial_key[0], initial_key[1], chosen_word])
 
-    char_count += len(words[0]) + len(words[1]) + len(words[2])
+    # Adds character count for the first three words, with 2 spaces between.
+    char_count += len(words[0]) + len(words[1]) + len(words[2]) + 2
 
+    # New key is the 1st index of current(or ititial) key, plus chosen word.
+    # It then can be used/reassigned in the while loop below
+    # (while chosen_word is not None)
     new_key = (initial_key[1], chosen_word)
 
-    #punc_count = 0
+    # This generates the Markov chain...we fear it is not DRY. Clean this up!
     while chosen_word is not None:
+        # Rebinds current key to new_key, selects random value, and assigns
+        # new key to evaluate.
         current_key = new_key
         chosen_word = choice(chains[current_key])
         new_key = (current_key[1], chosen_word)
+        # Ensures that a None type is not added to our words list.
         if chosen_word is not None:
-            if char_count < 125:
+            # This checks to see if we are close to max characters and, if so,
+            # selects a final word.
+            if char_count < max_characters - 15:
                 words.append(chosen_word)
                 char_count += len(chosen_word)
             else:
-                # while chosen_word[-1] not in end_punct:
+                # If final chosen word already has appropriate ending
+                # punctuation, adds it to words and breaks loop.
                 if chosen_word[-1] in end_punct:
                     words.append(chosen_word)
                     break
                 else:
+                    # Value found variable used to track whether any other
+                    # associated values in current_key already has end
+                    # punctuation and, if so, adds it to words and breaks loop.
                     value_found = False
                     for value in chains[current_key]:
                         if value[-1] in end_punct:
                             words.append(value)
                             value_found = True
                             break
+                    # If no values for current_key have end punctuation,
+                    # replaces any existing puctuation with end punctuation,
+                    # or adds a random ending punctuation mark.
                     if value_found is False:
                         if chosen_word[-1] in all_punct:
                             chosen_word = chosen_word.replace(chosen_word[-1],
@@ -121,11 +141,12 @@ def make_text(chains):
                             chosen_word = chosen_word + choice(end_punct)
                         words.append(chosen_word)
                         break
-    print char_count
+    # print char_count
 
+    # returns a single string from words list, joined with a space between.
     return " ".join(words)
 
-
+# Gets file based on user input
 input_path = sys.argv[1]
 
 # Open the file and turn it into one long string
