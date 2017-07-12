@@ -2,6 +2,8 @@
 
 import sys
 
+import string
+
 from random import choice
 
 
@@ -68,8 +70,15 @@ def make_chains(text_string):
 def make_text(chains):
     """Return text from chains."""
 
+    char_count = 0
+
     words = []
+
     chosen_word = ""
+
+    end_punct = ["?", ".", "!"]
+
+    all_punct = string.punctuation
 
     #This loop means: While the chosen word is not None or "".
     while not chosen_word:
@@ -79,6 +88,8 @@ def make_text(chains):
 
     words.extend([initial_key[0], initial_key[1], chosen_word])
 
+    char_count += len(words[0]) + len(words[1]) + len(words[2])
+
     new_key = (initial_key[1], chosen_word)
 
     #punc_count = 0
@@ -87,7 +98,30 @@ def make_text(chains):
         chosen_word = choice(chains[current_key])
         new_key = (current_key[1], chosen_word)
         if chosen_word is not None:
-            words.append(chosen_word)
+            if char_count < 125:
+                words.append(chosen_word)
+                char_count += len(chosen_word)
+            else:
+                # while chosen_word[-1] not in end_punct:
+                if chosen_word[-1] in end_punct:
+                    words.append(chosen_word)
+                    break
+                else:
+                    value_found = False
+                    for value in chains[current_key]:
+                        if value[-1] in end_punct:
+                            words.append(value)
+                            value_found = True
+                            break
+                    if value_found is False:
+                        if chosen_word[-1] in all_punct:
+                            chosen_word = chosen_word.replace(chosen_word[-1],
+                                                              choice(end_punct))
+                        else:
+                            chosen_word = chosen_word + choice(end_punct)
+                        words.append(chosen_word)
+                        break
+    print char_count
 
     return " ".join(words)
 
