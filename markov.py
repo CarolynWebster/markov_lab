@@ -19,7 +19,7 @@ def open_and_read_file(file_path):
     return initial_text
 
 
-def make_chains(text_string):
+def make_chains(text_string, n_gram_length):
     """Take input text as string; return dictionary of Markov chains.
 
     A chain will be a key that consists of a tuple of (word1, word2)
@@ -30,8 +30,9 @@ def make_chains(text_string):
 
         >>> chains = make_chains("hi there mary hi there juanita")
 
-    Each bigram (except the last) will be a key in chains:
+    Each n_gram (except the last) will be a key in chains:
 
+    bigram example:
         >>> sorted(chains.keys())
         [('hi', 'there'), ('mary', 'hi'), ('there', 'mary')]
 
@@ -51,15 +52,25 @@ def make_chains(text_string):
     split_length = len(split_text)
 
     #Loop through all words in the split text list expect for final two words
-    for i in range(split_length - 2):
-        bigram = (split_text[i], split_text[i + 1])
-        if bigram in chains:
-            chains[bigram].append(split_text[i + 2])
+    for i in range(split_length - n_gram_length):
+        # Creates a list to hold n words for our n-gram
+        tuple_list = []
+
+        # Based on user inputted n-gram lengths we loop through split_text
+        # and adds the specified number of words to the tuple_list
+        for n in range(n_gram_length):
+            tuple_list.append(split_text[i + n])
+
+        n_gram = tuple(tuple_list)
+
+        if n_gram in chains:
+            chains[n_gram].append(split_text[i + n_gram_length])
         else:
-            chains[bigram] = [split_text[i + 2]]
+            chains[n_gram] = [split_text[i + n_gram_length]]
 
     #Add final tuple using negative indicies
-    final_tuple = (split_text[-2], split_text[-1])
+    final_tuple = tuple(split_text[-n_gram_length:])
+    #final_tuple = (split_text[-2], split_text[-1])
 
     #if its in chains get the list and concat with a None type
     chains[final_tuple] = chains.get(final_tuple, []) + [None]
@@ -90,7 +101,9 @@ def make_text(chains, max_characters=140):
 
     # Adding inital key tuple, to make a logical start to the sentence
     # (initial tuple and chosen word together).
-    words.extend([initial_key[0], initial_key[1], chosen_word])
+    # START HERE TO FIX N-GRAMS!!!!!!!!!!
+    words.extend()
+    #words.extend([initial_key[0], initial_key[1], chosen_word])
 
     # Adds character count for the first three words, with 2 spaces between.
     char_count += len(words[0]) + len(words[1]) + len(words[2]) + 2
@@ -153,7 +166,7 @@ input_path = sys.argv[1]
 input_text = open_and_read_file(input_path)
 
 # Get a Markov chain
-chains = make_chains(input_text)
+chains = make_chains(input_text, 2)
 # print chains
 
 # Produce random text
